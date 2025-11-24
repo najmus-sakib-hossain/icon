@@ -16,43 +16,43 @@ fn main() {
                 // React
                 let react = icon.to_react_component(true);
                 println!("\n   [React Component Preview]");
-                println!("   {}", react.lines().take(3).collect::<Vec<_>>().join("\n   "));
+                println!("   {}", react.lines().take(10).collect::<Vec<_>>().join("\n   "));
                 println!("   ...");
 
                 // Vue
                 let vue = icon.to_vue_component(true);
                 println!("\n   [Vue Component Preview]");
-                println!("   {}", vue.lines().take(3).collect::<Vec<_>>().join("\n   "));
+                println!("   {}", vue.lines().take(10).collect::<Vec<_>>().join("\n   "));
                 println!("   ...");
 
                 // Svelte
                 let svelte = icon.to_svelte_component(true);
                 println!("\n   [Svelte Component Preview]");
-                println!("   {}", svelte.lines().take(3).collect::<Vec<_>>().join("\n   "));
+                println!("   {}", svelte.lines().take(10).collect::<Vec<_>>().join("\n   "));
                 println!("   ...");
 
                 // React Native
                 let rn = icon.to_react_native_component(true);
                 println!("\n   [React Native Component Preview]");
-                println!("   {}", rn.lines().take(3).collect::<Vec<_>>().join("\n   "));
+                println!("   {}", rn.lines().take(10).collect::<Vec<_>>().join("\n   "));
                 println!("   ...");
 
                 // Qwik
                 let qwik = icon.to_qwik_component(true);
                 println!("\n   [Qwik Component Preview]");
-                println!("   {}", qwik.lines().take(3).collect::<Vec<_>>().join("\n   "));
+                println!("   {}", qwik.lines().take(10).collect::<Vec<_>>().join("\n   "));
                 println!("   ...");
 
                 // Solid
                 let solid = icon.to_solid_component(true);
                 println!("\n   [Solid Component Preview]");
-                println!("   {}", solid.lines().take(3).collect::<Vec<_>>().join("\n   "));
+                println!("   {}", solid.lines().take(10).collect::<Vec<_>>().join("\n   "));
                 println!("   ...");
 
                 // Astro
                 let astro = icon.to_astro_component();
                 println!("\n   [Astro Component Preview]");
-                println!("   {}", astro.lines().take(3).collect::<Vec<_>>().join("\n   "));
+                println!("   {}", astro.lines().take(10).collect::<Vec<_>>().join("\n   "));
                 println!("   ...");
             }
             Err(e) => println!("   ✗ Failed to load SVGL icon: {}", e),
@@ -75,37 +75,37 @@ fn main() {
                     // React
                     let react = data.to_react_component(name, 32, 32, true);
                     println!("\n   [React Component Preview]");
-                    println!("   {}", react.lines().take(3).collect::<Vec<_>>().join("\n   "));
+                    println!("   {}", react.lines().take(10).collect::<Vec<_>>().join("\n   "));
                     println!("   ...");
 
                     // Vue
                     let vue = data.to_vue_component(32, 32, true);
                     println!("\n   [Vue Component Preview]");
-                    println!("   {}", vue.lines().take(3).collect::<Vec<_>>().join("\n   "));
+                    println!("   {}", vue.lines().take(10).collect::<Vec<_>>().join("\n   "));
                     println!("   ...");
 
                     // React Native
                     let rn = data.to_react_native_component(name, 32, 32, true);
                     println!("\n   [React Native Component Preview]");
-                    println!("   {}", rn.lines().take(3).collect::<Vec<_>>().join("\n   "));
+                    println!("   {}", rn.lines().take(10).collect::<Vec<_>>().join("\n   "));
                     println!("   ...");
 
                     // Qwik
                     let qwik = data.to_qwik_component(name, 32, 32, true);
                     println!("\n   [Qwik Component Preview]");
-                    println!("   {}", qwik.lines().take(3).collect::<Vec<_>>().join("\n   "));
+                    println!("   {}", qwik.lines().take(10).collect::<Vec<_>>().join("\n   "));
                     println!("   ...");
 
                     // Solid
                     let solid = data.to_solid_component(name, 32, 32, true);
                     println!("\n   [Solid Component Preview]");
-                    println!("   {}", solid.lines().take(3).collect::<Vec<_>>().join("\n   "));
+                    println!("   {}", solid.lines().take(10).collect::<Vec<_>>().join("\n   "));
                     println!("   ...");
 
                     // Astro
                     let astro = data.to_astro_component(32, 32);
                     println!("\n   [Astro Component Preview]");
-                    println!("   {}", astro.lines().take(3).collect::<Vec<_>>().join("\n   "));
+                    println!("   {}", astro.lines().take(10).collect::<Vec<_>>().join("\n   "));
                     println!("   ...");
                 }
             }
