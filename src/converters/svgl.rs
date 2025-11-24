@@ -84,6 +84,7 @@ impl SvgIcon {
         })
     }
 
+    #[allow(dead_code)]
     pub fn to_react_component(&self, typescript: bool) -> String {
         let name = to_pascal_case(&self.filename);
         let jsx = svg_to_jsx(&self.svg_content);
@@ -109,6 +110,7 @@ impl SvgIcon {
         }
     }
 
+    #[allow(dead_code)]
     pub fn to_vue_component(&self, typescript: bool) -> String {
         let (template, styles) = extract_styles(&self.svg_content);
         let script_lang = if typescript { " lang=\"ts\"" } else { "" };
@@ -128,6 +130,7 @@ impl SvgIcon {
         )
     }
 
+    #[allow(dead_code)]
     pub fn to_svelte_component(&self, typescript: bool) -> String {
         let (template, styles) = extract_styles(&self.svg_content);
         let script_lang = if typescript { " lang=\"ts\"" } else { "" };

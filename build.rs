@@ -35,6 +35,14 @@ fn main() {
     match status {
         Ok(status) if status.success() => {
             println!("cargo:warning=FlatBuffers schema compiled successfully");
+            
+            // Patch generated file to fix lifetime warnings
+            let generated_path = src_dir.join("icon_generated.rs");
+            if let Ok(content) = fs::read_to_string(&generated_path) {
+                // Add allow warnings at the top
+                let new_content = format!("#![allow(unused_imports, dead_code, clippy::all, warnings)]\n{}", content);
+                fs::write(&generated_path, new_content).expect("Failed to patch generated file");
+            }
         }
         Ok(status) => {
             panic!("flatc failed with status: {:?}", status);

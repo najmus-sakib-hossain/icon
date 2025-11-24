@@ -1,5 +1,6 @@
 use regex::{Regex, Captures};
 
+#[allow(dead_code)]
 pub fn extract_styles(content: &str) -> (String, String) {
     let re = Regex::new(r"(?si)<style[^>]*>(.*?)</style>").unwrap();
     let mut styles = Vec::new();
@@ -11,6 +12,7 @@ pub fn extract_styles(content: &str) -> (String, String) {
     (template, styles.join("\n"))
 }
 
+#[allow(dead_code)]
 pub fn svg_to_jsx(content: &str) -> String {
     let mut jsx = content.to_string();
     
@@ -45,6 +47,7 @@ pub fn svg_to_jsx(content: &str) -> String {
     jsx
 }
 
+#[allow(dead_code)]
 pub fn to_pascal_case(s: &str) -> String {
     let s = s.replace("-", " ");
     s.split_whitespace()

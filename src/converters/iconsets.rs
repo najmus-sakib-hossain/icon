@@ -33,21 +33,23 @@ pub struct IconSetInfo {
 pub struct IconData {
     pub body: String,
     #[serde(default)]
-    pub width: Option<u32>,
+    pub width: Option<f32>,
     #[serde(default)]
-    pub height: Option<u32>,
+    pub height: Option<f32>,
 }
 
 impl IconData {
+    #[allow(dead_code)]
     pub fn to_svg(&self, default_width: u32, default_height: u32) -> String {
-        let w = self.width.unwrap_or(default_width);
-        let h = self.height.unwrap_or(default_height);
+        let w = self.width.unwrap_or(default_width as f32);
+        let h = self.height.unwrap_or(default_height as f32);
         format!(
             "<svg viewBox=\"0 0 {} {}\" width=\"{}\" height=\"{}\" fill=\"currentColor\">{}</svg>",
             w, h, w, h, self.body
         )
     }
 
+    #[allow(dead_code)]
     pub fn to_react_component(&self, name: &str, default_width: u32, default_height: u32, typescript: bool) -> String {
         let name = to_pascal_case(name);
         let svg = self.to_svg(default_width, default_height);
@@ -74,6 +76,7 @@ impl IconData {
         }
     }
 
+    #[allow(dead_code)]
     pub fn to_vue_component(&self, default_width: u32, default_height: u32, typescript: bool) -> String {
         let svg = self.to_svg(default_width, default_height);
         let script_lang = if typescript { " lang=\"ts\"" } else { "" };
@@ -87,6 +90,7 @@ impl IconData {
         )
     }
 
+    #[allow(dead_code)]
     pub fn to_svelte_component(&self, default_width: u32, default_height: u32, typescript: bool) -> String {
         let svg = self.to_svg(default_width, default_height);
         let script_lang = if typescript { " lang=\"ts\"" } else { "" };
@@ -179,8 +183,8 @@ impl IconSetJson {
             let icon = Icon::create(&mut builder, &IconArgs {
                 id: Some(id),
                 body: Some(body),
-                width: value.width.unwrap_or(0),
-                height: value.height.unwrap_or(0),
+                width: value.width.unwrap_or(0.0) as u32,
+                height: value.height.unwrap_or(0.0) as u32,
             });
             icons_vec.push(icon);
         }
