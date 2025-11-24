@@ -48,6 +48,152 @@ pub fn svg_to_jsx(content: &str) -> String {
 }
 
 #[allow(dead_code)]
+pub fn svg_to_react_native(content: &str, name: &str, snippet: bool) -> String {
+    let mut svg = svg_to_jsx(content);
+
+    // Replacements map
+    let replacements = vec![
+        ("svg", "Svg"),
+        ("path", "Path"),
+        ("g", "G"),
+        ("circle", "Circle"),
+        ("rect", "Rect"),
+        ("line", "Line"),
+        ("polyline", "Polyline"),
+        ("polygon", "Polygon"),
+        ("ellipse", "Ellipse"),
+        ("text", "Text"),
+        ("tspan", "Tspan"),
+        ("textPath", "TextPath"),
+        ("defs", "Defs"),
+        ("use", "Use"),
+        ("symbol", "Symbol"),
+        ("linearGradient", "LinearGradient"),
+        ("radialGradient", "RadialGradient"),
+        ("stop", "Stop"),
+    ];
+
+    let mut used_components = Vec::new();
+
+    for (from, to) in &replacements {
+        let re_open = Regex::new(&format!(r"<{}([\s>])", from)).unwrap();
+        let re_close = Regex::new(&format!(r"</{}>", from)).unwrap();
+        
+        if re_open.is_match(&svg) || re_close.is_match(&svg) {
+            used_components.push(to.to_string());
+            svg = re_open.replace_all(&svg, format!("<{}$1", to).as_str()).to_string();
+            svg = re_close.replace_all(&svg, format!("</{}>", to).as_str()).to_string();
+        }
+    }
+
+    // Specific attribute replacements for React Native
+    svg = svg.replace("className=", "");
+    svg = svg.replace("href=", "xlinkHref=");
+    svg = svg.replace("clipPath=", "clipPath="); // Already camelCase from svg_to_jsx?
+    // svg_to_jsx handles kebab-case to camelCase, so stroke-width -> strokeWidth is already done.
+
+    // Generate imports
+    let mut imports = String::from("import Svg");
+    let other_components: Vec<String> = used_components.iter()
+        .filter(|c| c.as_str() != "Svg")
+        .cloned()
+        .collect();
+    
+    if !other_components.is_empty() {
+        imports.push_str(", { ");
+        imports.push_str(&other_components.join(", "));
+        imports.push_str(" }");
+    }
+    imports.push_str(" from 'react-native-svg';");
+
+    let code = format!(
+        r#"
+export function {}(props) {{
+  return (
+    {}
+  )
+}}"#,
+        name, svg
+    );
+
+    if snippet {
+        code
+    } else {
+        format!("import React from 'react';\n{}\n\n{}\nexport default {};", imports, code, name)
+    }
+}
+
+#[allow(dead_code)]
+pub fn svg_to_qwik(content: &str, name: &str, snippet: bool) -> String {
+    let svg = svg_to_jsx(content); // Qwik uses JSX-like syntax
+    // Inject props and key
+    let re_svg = Regex::new(r"<svg (.*?)>").unwrap();
+    let svg_with_props = re_svg.replace(&svg, "<svg $1 {...props} key={key}>").to_string();
+
+    let code = format!(
+        r#"
+export function {}(props: QwikIntrinsicElements['svg'], key: string) {{
+  return (
+    {}
+  )
+}}"#,
+        name, svg_with_props
+    );
+
+    if snippet {
+        code
+    } else {
+        format!("import type {{ QwikIntrinsicElements }} from '@builder.io/qwik'\n{}\nexport default {}", code, name)
+    }
+}
+
+#[allow(dead_code)]
+pub fn svg_to_solid(content: &str, name: &str, snippet: bool) -> String {
+    // Solid uses standard SVG attributes (class, not className), so we don't use svg_to_jsx
+    // But we might want to clean it up? Icones uses raw svg but injects props.
+    let svg = content.to_string();
+    
+    // Inject props
+    let re_svg = Regex::new(r"<svg (.*?)>").unwrap();
+    let svg_with_props = re_svg.replace(&svg, "<svg $1 {...props}>").to_string();
+
+    let code = format!(
+        r#"
+export function {}(props: JSX.IntrinsicElements['svg']) {{
+  return (
+    {}
+  )
+}}"#,
+        name, svg_with_props
+    );
+
+    if snippet {
+        code
+    } else {
+        format!("import type {{ JSX }} from 'solid-js'\n{}\nexport default {}", code, name)
+    }
+}
+
+#[allow(dead_code)]
+pub fn svg_to_astro(content: &str) -> String {
+    // Astro is HTML-like
+    let svg = content.to_string();
+    
+    // Inject props
+    let re_svg = Regex::new(r"<svg (.*?)>").unwrap();
+    let svg_with_props = re_svg.replace(&svg, "<svg $1 {{...props}}>").to_string();
+
+    format!(
+        r#"---
+const props = Astro.props
+---
+
+{}"#,
+        svg_with_props
+    )
+}
+
+#[allow(dead_code)]
 pub fn to_pascal_case(s: &str) -> String {
     let s = s.replace("-", " ");
     s.split_whitespace()

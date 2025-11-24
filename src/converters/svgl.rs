@@ -2,7 +2,7 @@ use quick_xml::events::Event;
 use quick_xml::Reader;
 use std::fs;
 use std::path::Path;
-use crate::converters::utils::{extract_styles, svg_to_jsx, to_pascal_case};
+use crate::converters::utils::{extract_styles, svg_to_jsx, to_pascal_case, svg_to_react_native, svg_to_qwik, svg_to_solid, svg_to_astro};
 
 #[derive(Debug, Clone)]
 pub struct SvgIcon {
@@ -146,6 +146,29 @@ impl SvgIcon {
             {}",
             script_lang, template, style_block
         )
+    }
+
+    #[allow(dead_code)]
+    pub fn to_react_native_component(&self, _typescript: bool) -> String {
+        let name = to_pascal_case(&self.filename);
+        svg_to_react_native(&self.svg_content, &name, false)
+    }
+
+    #[allow(dead_code)]
+    pub fn to_qwik_component(&self, _typescript: bool) -> String {
+        let name = to_pascal_case(&self.filename);
+        svg_to_qwik(&self.svg_content, &name, false)
+    }
+
+    #[allow(dead_code)]
+    pub fn to_solid_component(&self, _typescript: bool) -> String {
+        let name = to_pascal_case(&self.filename);
+        svg_to_solid(&self.svg_content, &name, false)
+    }
+
+    #[allow(dead_code)]
+    pub fn to_astro_component(&self) -> String {
+        svg_to_astro(&self.svg_content)
     }
 
     pub fn build_collection(icons: &[SvgIcon]) -> Vec<u8> {

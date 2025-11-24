@@ -2,7 +2,7 @@ use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::fs;
 use std::path::Path;
-use crate::converters::utils::{svg_to_jsx, to_pascal_case};
+use crate::converters::utils::{svg_to_jsx, to_pascal_case, svg_to_react_native, svg_to_qwik, svg_to_solid, svg_to_astro};
 
 #[derive(Debug, Deserialize, Serialize)]
 pub struct Author {
@@ -100,6 +100,33 @@ impl IconData {
             {}",
             script_lang, svg
         )
+    }
+
+    #[allow(dead_code)]
+    pub fn to_react_native_component(&self, name: &str, default_width: u32, default_height: u32, _typescript: bool) -> String {
+        let name = to_pascal_case(name);
+        let svg = self.to_svg(default_width, default_height);
+        svg_to_react_native(&svg, &name, false)
+    }
+
+    #[allow(dead_code)]
+    pub fn to_qwik_component(&self, name: &str, default_width: u32, default_height: u32, _typescript: bool) -> String {
+        let name = to_pascal_case(name);
+        let svg = self.to_svg(default_width, default_height);
+        svg_to_qwik(&svg, &name, false)
+    }
+
+    #[allow(dead_code)]
+    pub fn to_solid_component(&self, name: &str, default_width: u32, default_height: u32, _typescript: bool) -> String {
+        let name = to_pascal_case(name);
+        let svg = self.to_svg(default_width, default_height);
+        svg_to_solid(&svg, &name, false)
+    }
+
+    #[allow(dead_code)]
+    pub fn to_astro_component(&self, default_width: u32, default_height: u32) -> String {
+        let svg = self.to_svg(default_width, default_height);
+        svg_to_astro(&svg)
     }
 }
 
