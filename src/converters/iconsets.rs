@@ -2,6 +2,7 @@ use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::fs;
 use std::path::Path;
+use crate::converters::utils::{svg_to_jsx, to_pascal_case};
 
 #[derive(Debug, Deserialize, Serialize)]
 pub struct Author {
@@ -35,6 +36,67 @@ pub struct IconData {
     pub width: Option<u32>,
     #[serde(default)]
     pub height: Option<u32>,
+}
+
+impl IconData {
+    pub fn to_svg(&self, default_width: u32, default_height: u32) -> String {
+        let w = self.width.unwrap_or(default_width);
+        let h = self.height.unwrap_or(default_height);
+        format!(
+            "<svg viewBox=\"0 0 {} {}\" width=\"{}\" height=\"{}\" fill=\"currentColor\">{}</svg>",
+            w, h, w, h, self.body
+        )
+    }
+
+    pub fn to_react_component(&self, name: &str, default_width: u32, default_height: u32, typescript: bool) -> String {
+        let name = to_pascal_case(name);
+        let svg = self.to_svg(default_width, default_height);
+        let jsx = svg_to_jsx(&svg);
+        
+        if typescript {
+            format!(
+                "import * as React from 'react';\n\n\
+                const {} = (props: React.SVGProps<SVGSVGElement>) => (\n\
+                {}\n\
+                );\n\n\
+                export default {};",
+                name, jsx, name
+            )
+        } else {
+            format!(
+                "import * as React from 'react';\n\n\
+                const {} = (props) => (\n\
+                {}\n\
+                );\n\n\
+                export default {};",
+                name, jsx, name
+            )
+        }
+    }
+
+    pub fn to_vue_component(&self, default_width: u32, default_height: u32, typescript: bool) -> String {
+        let svg = self.to_svg(default_width, default_height);
+        let script_lang = if typescript { " lang=\"ts\"" } else { "" };
+
+        format!(
+            "<script setup{}>\n</script>\n\n\
+            <template>\n\
+            {}\n\
+            </template>",
+            script_lang, svg
+        )
+    }
+
+    pub fn to_svelte_component(&self, default_width: u32, default_height: u32, typescript: bool) -> String {
+        let svg = self.to_svg(default_width, default_height);
+        let script_lang = if typescript { " lang=\"ts\"" } else { "" };
+
+        format!(
+            "<script{}>\n</script>\n\n\
+            {}",
+            script_lang, svg
+        )
+    }
 }
 
 #[derive(Debug, Deserialize, Serialize)]

@@ -2,6 +2,7 @@ use quick_xml::events::Event;
 use quick_xml::Reader;
 use std::fs;
 use std::path::Path;
+use crate::converters::utils::{extract_styles, svg_to_jsx, to_pascal_case};
 
 #[derive(Debug, Clone)]
 pub struct SvgIcon {
@@ -81,6 +82,67 @@ impl SvgIcon {
             width,
             height,
         })
+    }
+
+    pub fn to_react_component(&self, typescript: bool) -> String {
+        let name = to_pascal_case(&self.filename);
+        let jsx = svg_to_jsx(&self.svg_content);
+        
+        if typescript {
+            format!(
+                "import * as React from 'react';\n\n\
+                const {} = (props: React.SVGProps<SVGSVGElement>) => (\n\
+                {}\n\
+                );\n\n\
+                export default {};",
+                name, jsx, name
+            )
+        } else {
+            format!(
+                "import * as React from 'react';\n\n\
+                const {} = (props) => (\n\
+                {}\n\
+                );\n\n\
+                export default {};",
+                name, jsx, name
+            )
+        }
+    }
+
+    pub fn to_vue_component(&self, typescript: bool) -> String {
+        let (template, styles) = extract_styles(&self.svg_content);
+        let script_lang = if typescript { " lang=\"ts\"" } else { "" };
+        let style_block = if !styles.is_empty() {
+            format!("\n<style scoped>\n{}\n</style>", styles)
+        } else {
+            String::new()
+        };
+
+        format!(
+            "<script setup{}>\n</script>\n\n\
+            <template>\n\
+            {}\n\
+            </template>\n\
+            {}",
+            script_lang, template, style_block
+        )
+    }
+
+    pub fn to_svelte_component(&self, typescript: bool) -> String {
+        let (template, styles) = extract_styles(&self.svg_content);
+        let script_lang = if typescript { " lang=\"ts\"" } else { "" };
+        let style_block = if !styles.is_empty() {
+            format!("\n<style>\n{}\n</style>", styles)
+        } else {
+            String::new()
+        };
+
+        format!(
+            "<script{}>\n</script>\n\n\
+            {}\n\
+            {}",
+            script_lang, template, style_block
+        )
     }
 
     pub fn build_collection(icons: &[SvgIcon]) -> Vec<u8> {
