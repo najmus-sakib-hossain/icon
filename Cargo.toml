@@ -1,5 +1,5 @@
 [package]
-name = "icon"
+name = "dx-icon"
 version = "0.0.1"
 edition = "2024"
 
