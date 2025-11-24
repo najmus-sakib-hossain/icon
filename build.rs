@@ -6,9 +6,8 @@ use walkdir::WalkDir;
 
 // Include generated code
 #[allow(dead_code, unused_imports)]
-mod icon_generated {
-    include!(concat!(env!("OUT_DIR"), "/icon_generated.rs"));
-}
+#[path = "src/icon_generated.rs"]
+mod icon_generated;
 
 // Include converters
 #[path = "src/converters/mod.rs"]
@@ -21,13 +20,14 @@ fn main() {
 
     let out_dir = PathBuf::from(env::var("OUT_DIR").unwrap());
     let schema_path = Path::new("schema/icon.fbs");
+    let src_dir = Path::new("src");
 
     // Compile FlatBuffers schema
     let status = Command::new("flatc")
         .args(&[
             "--rust",
             "-o",
-            out_dir.to_str().unwrap(),
+            src_dir.to_str().unwrap(),
             schema_path.to_str().unwrap(),
         ])
         .status();
