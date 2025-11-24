@@ -54,9 +54,86 @@ impl IconSetJson {
     }
 
     pub fn to_flatbuffer(&self) -> Vec<u8> {
-        // This will be implemented to convert to FlatBuffers binary
-        // For now, return empty vec as placeholder
-        Vec::new()
+        use crate::icon_generated::dx_icon::{
+            Icon, IconArgs, IconInfo, IconInfoArgs, IconSet, IconSetArgs, 
+            Author as FbAuthor, AuthorArgs, License as FbLicense, LicenseArgs
+        };
+        use flatbuffers::FlatBufferBuilder;
+
+        let mut builder = FlatBufferBuilder::new();
+
+        // Create Author
+        let author = if let Some(a) = &self.info.author {
+            let name = builder.create_string(&a.name);
+            let url = a.url.as_ref().map(|u| builder.create_string(u));
+            Some(FbAuthor::create(&mut builder, &AuthorArgs {
+                name: Some(name),
+                url,
+            }))
+        } else {
+            None
+        };
+
+        // Create License
+        let license = if let Some(l) = &self.info.license {
+            let title = builder.create_string(&l.title);
+            let spdx = builder.create_string(&l.spdx);
+            let url = l.url.as_ref().map(|u| builder.create_string(u));
+            Some(FbLicense::create(&mut builder, &LicenseArgs {
+                title: Some(title),
+                spdx: Some(spdx),
+                url,
+            }))
+        } else {
+            None
+        };
+
+        // Create IconInfo
+        let name = builder.create_string(&self.info.name);
+        let version = self.info.version.as_ref().map(|v| builder.create_string(v));
+        let category = self.info.category.as_ref().map(|c| builder.create_string(c));
+        
+        let info = IconInfo::create(&mut builder, &IconInfoArgs {
+            name: Some(name),
+            total: self.info.total,
+            version,
+            author,
+            license,
+            height: self.info.height.unwrap_or(16),
+            category,
+            palette: self.info.palette.unwrap_or(false),
+        });
+
+        // Create Icons
+        let mut icons_vec = Vec::new();
+        // Sort keys for deterministic output
+        let mut keys: Vec<&String> = self.icons.keys().collect();
+        keys.sort();
+        
+        for key in keys {
+            let value = &self.icons[key];
+            let id = builder.create_string(key);
+            let body = builder.create_string(&value.body);
+            let icon = Icon::create(&mut builder, &IconArgs {
+                id: Some(id),
+                body: Some(body),
+                width: value.width.unwrap_or(0),
+                height: value.height.unwrap_or(0),
+            });
+            icons_vec.push(icon);
+        }
+        let icons = builder.create_vector(&icons_vec);
+
+        // Create IconSet
+        let prefix = builder.create_string(&self.prefix);
+        let icon_set = IconSet::create(&mut builder, &IconSetArgs {
+            prefix: Some(prefix),
+            info: Some(info),
+            icons: Some(icons),
+        });
+
+        builder.finish(icon_set, None);
+        builder.finished_data().to_vec()
     }
 }
 

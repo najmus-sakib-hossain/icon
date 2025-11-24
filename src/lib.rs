@@ -1,6 +1,12 @@
 pub mod converters;
 pub mod readers;
 
+// Include generated FlatBuffers code
+#[allow(dead_code, unused_imports)]
+pub mod icon_generated {
+    include!(concat!(env!("OUT_DIR"), "/icon_generated.rs"));
+}
+
 // Re-export commonly used types
 pub use readers::{IconSetsReader, SvglReader};
 

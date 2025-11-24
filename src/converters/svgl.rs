@@ -25,7 +25,7 @@ impl SvgIcon {
         
         // Parse SVG to extract viewBox and dimensions
         let mut reader = Reader::from_str(&svg_content);
-        reader.trim_text(true);
+        reader.config_mut().trim_text(true);
 
         let mut viewbox = None;
         let mut width = None;
@@ -83,10 +83,41 @@ impl SvgIcon {
         })
     }
 
-    pub fn to_flatbuffer(&self) -> Vec<u8> {
-        // This will be implemented to convert to FlatBuffers binary
-        // For now, return empty vec as placeholder
-        Vec::new()
+    pub fn build_collection(icons: &[SvgIcon]) -> Vec<u8> {
+        use crate::icon_generated::dx_icon::{SvglIcon, SvglIconArgs, SvglCollection, SvglCollectionArgs};
+        use flatbuffers::FlatBufferBuilder;
+
+        let mut builder = FlatBufferBuilder::new();
+        
+        let mut fb_icons = Vec::new();
+        // Sort by filename for determinism
+        let mut sorted_icons: Vec<&SvgIcon> = icons.iter().collect();
+        sorted_icons.sort_by(|a, b| a.filename.cmp(&b.filename));
+
+        for icon in sorted_icons {
+            let id = builder.create_string(&icon.filename);
+            let filename = builder.create_string(&icon.filename);
+            let svg_content = builder.create_string(&icon.svg_content);
+            let viewbox = icon.viewbox.as_ref().map(|v| builder.create_string(v));
+            
+            let fb_icon = SvglIcon::create(&mut builder, &SvglIconArgs {
+                id: Some(id),
+                filename: Some(filename),
+                svg_content: Some(svg_content),
+                viewbox,
+                width: icon.width.unwrap_or(0),
+                height: icon.height.unwrap_or(0),
+            });
+            fb_icons.push(fb_icon);
+        }
+        
+        let icons_vec = builder.create_vector(&fb_icons);
+        let collection = SvglCollection::create(&mut builder, &SvglCollectionArgs {
+            icons: Some(icons_vec),
+        });
+        
+        builder.finish(collection, None);
+        builder.finished_data().to_vec()
     }
 }
 

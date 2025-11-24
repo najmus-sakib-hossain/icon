@@ -2,6 +2,17 @@ use std::env;
 use std::fs;
 use std::path::{Path, PathBuf};
 use std::process::Command;
+use walkdir::WalkDir;
+
+// Include generated code
+#[allow(dead_code, unused_imports)]
+mod icon_generated {
+    include!(concat!(env!("OUT_DIR"), "/icon_generated.rs"));
+}
+
+// Include converters
+#[path = "src/converters/mod.rs"]
+mod converters;
 
 fn main() {
     println!("cargo:rerun-if-changed=schema/icon.fbs");
@@ -42,7 +53,56 @@ fn main() {
 
     println!("cargo:warning=Icon binaries will be generated at: {}", icons_dir.display());
     
-    // Note: The actual conversion will be done by separate modules
-    // We'll include the generated FlatBuffers code
+    // Process Icon Sets (JSON)
+    let json_dir = Path::new("inspirations/icon-sets/json");
+    if json_dir.exists() {
+        println!("cargo:warning=Processing JSON icon sets from {}", json_dir.display());
+        for entry in WalkDir::new(json_dir).into_iter().filter_map(|e| e.ok()) {
+            let path = entry.path();
+            if path.extension().map_or(false, |ext| ext == "json") {
+                match converters::iconsets::IconSetJson::from_file(path) {
+                    Ok(iconset) => {
+                        let data = iconset.to_flatbuffer();
+                        let filename = path.file_stem().unwrap().to_string_lossy();
+                        let out_path = icons_dir.join(format!("{}.bin", filename));
+                        fs::write(&out_path, data).expect("Failed to write iconset binary");
+                    }
+                    Err(e) => {
+                        println!("cargo:warning=Failed to parse {}: {}", path.display(), e);
+                    }
+                }
+            }
+        }
+    } else {
+        println!("cargo:warning=JSON icon sets directory not found: {}", json_dir.display());
+    }
+
+    // Process SVGL Icons (SVG)
+    let svgl_dir = Path::new("inspirations/svgl/static/library");
+    if svgl_dir.exists() {
+        println!("cargo:warning=Processing SVGL icons from {}", svgl_dir.display());
+        let mut icons = Vec::new();
+        for entry in WalkDir::new(svgl_dir).into_iter().filter_map(|e| e.ok()) {
+            let path = entry.path();
+            if path.extension().map_or(false, |ext| ext == "svg") {
+                match converters::svgl::SvgIcon::from_file(path) {
+                    Ok(icon) => icons.push(icon),
+                    Err(e) => {
+                        println!("cargo:warning=Failed to parse SVG {}: {}", path.display(), e);
+                    }
+                }
+            }
+        }
+        
+        if !icons.is_empty() {
+            let data = converters::svgl::SvgIcon::build_collection(&icons);
+            let out_path = icons_dir.join("svgl.bin");
+            fs::write(&out_path, data).expect("Failed to write svgl binary");
+            println!("cargo:warning=Generated svgl.bin with {} icons", icons.len());
+        }
+    } else {
+        println!("cargo:warning=SVGL directory not found: {}", svgl_dir.display());
+    }
+
     println!("cargo:warning=Build script completed. Generated files in {}", out_dir.display());
 }
