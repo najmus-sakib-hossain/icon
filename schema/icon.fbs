@@ -1,0 +1,59 @@
+// FlatBuffers schema for icon data
+
+namespace dx_icon;
+
+// License information for an icon set
+table License {
+  title: string;
+  spdx: string;
+  url: string;
+}
+
+// Author information
+table Author {
+  name: string;
+  url: string;
+}
+
+// Metadata for an icon set
+table IconInfo {
+  name: string;
+  total: uint32;
+  version: string;
+  author: Author;
+  license: License;
+  height: uint32 = 16;
+  category: string;
+  palette: bool = false;
+}
+
+// Individual icon entry
+table Icon {
+  id: string (key);
+  body: string;  // SVG path data
+  width: uint32 = 0;
+  height: uint32 = 0;
+}
+
+// Root table for icon-sets (JSON based)
+table IconSet {
+  prefix: string;
+  info: IconInfo;
+  icons: [Icon];
+}
+
+// Root table for SVGL icons (SVG file based)
+table SvglIcon {
+  id: string (key);
+  filename: string;
+  svg_content: string;
+  viewbox: string;
+  width: uint32 = 0;
+  height: uint32 = 0;
+}
+
+table SvglCollection {
+  icons: [SvglIcon];
+}
+
+root_type IconSet;

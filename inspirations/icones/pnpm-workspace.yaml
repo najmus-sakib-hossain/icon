@@ -1,0 +1,4 @@
+packages:
+  - electron
+neverBuiltDependencies:
+  - ttf2woff2
